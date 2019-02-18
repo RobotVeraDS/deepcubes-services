@@ -5,7 +5,7 @@ import configparser
 from deepcubes.services import IntentClassifierService
 
 
-parser = argparse.ArgumentParser(description='Intent Classifier servic3')
+parser = argparse.ArgumentParser(description='Intent Classifier service')
 parser.add_argument('-c', '--config', type=str, required=True,
                     help="Path to config file")
 parser.add_argument('-p', '--port', type=int, default=3333,
