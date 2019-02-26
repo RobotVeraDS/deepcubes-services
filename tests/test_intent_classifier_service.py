@@ -6,6 +6,7 @@ import configparser
 
 from deepcubes_services.services import IntentClassifierService
 from deepcubes.embedders import LocalEmbedder
+from deepcubes.cubes import Tokenizer
 from deepcubes.models import LogisticIntentClassifier
 from deepcubes.services.utils import get_new_model_id
 
@@ -29,14 +30,15 @@ class IntentClassifierServiceTest(unittest.TestCase):
         self.model_storage = 'tests/models/intents'
         os.makedirs(self.model_storage, exist_ok=True)
 
-        self.embedder = LocalEmbedder('tests/data/test_embeds.kv')
-        self.classifier = LogisticIntentClassifier(self.embedder)
+        tokenizer = Tokenizer(Tokenizer.Mode.TOKEN)
+        self.embedder = LocalEmbedder('tests/data/test_embeds.kv', tokenizer)
 
-        self.questions, self.answers = [], []
+        self.classifier = LogisticIntentClassifier(self.embedder)
 
         with open("tests/data/test_dialog.json", "r") as handle:
             data = json.load(handle)
 
+        self.questions, self.answers = [], []
         for label, category in enumerate(data):
             answer = category["answers"][0]
 
@@ -44,7 +46,7 @@ class IntentClassifierServiceTest(unittest.TestCase):
                 self.questions.append(question)
                 self.answers.append(answer)
 
-        self.classifier.train(self.answers, self.questions, 'lem')
+        self.classifier.train(self.questions, self.answers)
         self.model_id = get_new_model_id(self.model_storage)
         self.clf_params = self.classifier.save()
 
@@ -58,18 +60,22 @@ class IntentClassifierServiceTest(unittest.TestCase):
         self.output_keys = ["answer", "probability",
                             "threshold", "accuracy_score"]
 
-    def test_get_requests(self):
+    def tearDown(self):
+        os.remove(self.clf_path)
+
+    def test_requests(self):
         predict_resp_data = self._get_predict_response(
             query='название',
             model_id=self.model_id
         )
 
+        with open("/tmp/tmp.txt", "w") as outfile:
+            print(json.dumps(predict_resp_data), file=outfile)
         self.assertEqual(2, len(predict_resp_data))
+
         for output in predict_resp_data:
             for key in self.output_keys:
                 self.assertIn(key, output)
-
-    def test_post_train_request(self):
 
         predict_resp_data = self._get_predict_response(
             query='чем занимается ваша фирма',
@@ -91,6 +97,3 @@ class IntentClassifierServiceTest(unittest.TestCase):
 
         predict_resp_data = json.loads(predict_resp.data.decode("utf-8"))
         return predict_resp_data
-
-    def tearDown(self):
-        os.remove(self.clf_path)

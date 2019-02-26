@@ -17,11 +17,11 @@ class VeraLiveDialogService(object):
 
         self.model_storage = config.get('live-dialog-service', 'MODEL_STORAGE')
         self.generic_data_path = config.get('live-dialog-service', 'GENERIC_DATA_PATH')
+
         embedder_path = config.get('live-dialog-service', 'EMBEDDER_PATH')
         self.embedder_factory = EmbedderFactory(embedder_path)
 
         self.lang_to_emb_mode = dict(config['embedder'])
-        self.lang_to_tok_mode = dict(config['tokenizer'])
 
         self.models = dict()
         for model_id in models_ids:
@@ -84,12 +84,9 @@ class VeraLiveDialogService(object):
                 self.logger.info("Received `lang` key: {}".format(config['lang']))
 
                 embedder_mode = self.lang_to_emb_mode[config['lang']]
-                embedder = self.embedder_factory.create(embedder_mode)
+                # TODO: think about this serializable method
+                embedder = self.embedder_factory.create({"mode": embedder_mode})
                 self.logger.info("Set embedder mode: {}".format(embedder_mode))
-
-                tokenizer_mode = self.lang_to_tok_mode[config['lang']]
-                config['tokenizer_mode'] = tokenizer_mode
-                self.logger.info("`{}` tokenizer mode set".format(tokenizer_mode))
 
                 live_dialog_model = VeraLiveDialog(embedder, self.generic_data_path)
                 live_dialog_model.train(config)

@@ -17,20 +17,15 @@ class MultistageClassifierService(object):
 
         self.model_storage = config.get('multistage-classifier-service',
                                         'MODEL_STORAGE')
-
         embedder_path = config.get('multistage-classifier-service',
                                    'EMBEDDER_PATH')
         self.embedder_factory = EmbedderFactory(embedder_path)
-
         major_model_id = config.get('multistage-classifier-service',
                                     'MAJOR_MODEL_ID')
-
         minor_model_id = config.get('multistage-classifier-service',
                                     'MINOR_MODEL_ID')
-
         groups_data_path = config.get('multistage-classifier-service',
                                       'GROUPS_DATA_PATH')
-
         self.multistage_model = self.load_model(major_model_id, minor_model_id,
                                                 groups_data_path)
 

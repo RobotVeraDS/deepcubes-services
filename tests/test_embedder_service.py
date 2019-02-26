@@ -21,16 +21,23 @@ class EmbedderServiceTest(unittest.TestCase):
         self.service = app.test_client()
 
     def test_get_requests(self):
-        tokenizer = Tokenizer()
-        tokenizer.train('lem')
+        tokenizer = Tokenizer(Tokenizer.Mode.TOKEN)
 
-        tokens = tokenizer(['Робот Вера'])
-        response = self.service.post('/test', json={"tokens": tokens})
+        queries = ["Робот Вера"]
+        tokens = tokenizer(queries)
 
+        response = self.service.post('/test/encode_tokens', json={"tokens": tokens})
         generated_vectors = response.get_json()["vectors"]
-
         self.assertAlmostEqual(
             sum(generated_vectors[0]),
-            -0.030646920857179794,
-            1
+            -1.5613,
+            3
+        )
+
+        response = self.service.post('/test/encode_queries', json={"queries": queries})
+        generated_vectors = response.get_json()["vectors"]
+        self.assertAlmostEqual(
+            sum(generated_vectors[0]),
+            -1.5613,
+            3
         )

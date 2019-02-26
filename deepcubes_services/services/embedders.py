@@ -10,6 +10,8 @@ from deepcubes.embedders import (
     LocalEmbedder,
 )
 
+from deepcubes.cubes import Tokenizer
+
 
 class FactoryType(Enum):
     LOCAL = 0
@@ -32,11 +34,16 @@ class EmbedderFactory(EmbedderFactoryABC):
     def _get_full_path(self, mode):
         return os.path.join(self.path, "{}.kv".format(mode))
 
-    def create(self, mode):
+    def create(self, embedder_serialized):
         if self.factory_type == FactoryType.NETWORK:
-            return NetworkEmbedder(self._get_full_url(mode), mode)
+            return NetworkEmbedder(self._get_full_url(embedder_serialized["mode"]))
         else:
-            return LocalEmbedder(self._get_full_path(mode), mode)
+            if "tokenizer" in embedder_serialized:
+                tokenizer = Tokenizer.load(embedder_serialized["tokenizer"])
+            else:
+                tokenizer = Tokenizer(Tokenizer.Mode.TOKEN)
+
+            return LocalEmbedder(self._get_full_path(embedder_serialized["mode"]), tokenizer)
 
 
 class NetworkEmbedder(Embedder):
@@ -51,20 +58,9 @@ class NetworkEmbedder(Embedder):
         super().__init__(mode)
         self.url = url
 
-    def __call__(self, *input):
-        return self.forward(*input)
+    def _get_vectors(self, url, data):
+        response = requests.post(url, json=data)
 
-    def forward(self, tokens_batch):
-        # TODO: fix this not idiomatic way to process empty tokens
-        for tokens in tokens_batch:
-            if not len(tokens):
-                tokens = [self.EMPTY_STRING]
-
-        data = {
-            'tokens': tokens_batch,
-        }
-
-        response = requests.post(self.url, json=data)
         if response.status_code != 200:
             raise ValueError("Network embedder error. Status code: {}.".format(
                 response.status_code))
@@ -75,6 +71,29 @@ class NetworkEmbedder(Embedder):
             raise ValueError("Network embedder error. No `vectors` in output.")
         else:
             return content['vectors']
+
+    def encode_queries(self, queries):
+        data = {"queries": queries}
+        url = "{}/encode_queries".format(self.url)
+        return self._get_vectors(url, data)
+
+    def encode_tokens(self, tokens_batch):
+        # TODO: fix this not idiomatic way to process empty tokens
+        for tokens in tokens_batch:
+            if not len(tokens):
+                tokens = [self.EMPTY_STRING]
+
+        data = {'tokens': tokens_batch}
+        url = "{}/encode_tokens".format(self.url)
+        return self._get_vectors(url, data)
+
+    def save(self):
+        cube_params = {
+            "class": self.__class__.__name__,
+            "mode": self.mode
+        }
+
+        return cube_params
 
     @classmethod
     def load(cls, cube_params, url):
