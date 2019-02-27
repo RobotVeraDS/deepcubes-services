@@ -2,7 +2,7 @@ import argparse
 import logging
 import configparser
 
-from deepcubes.services import VeraLiveDialogService
+from deepcubes_services.services import VeraLiveDialogService
 
 
 parser = argparse.ArgumentParser(description='Launch Vera Live Dialog API')

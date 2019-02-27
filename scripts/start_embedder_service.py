@@ -2,7 +2,7 @@ import configparser
 import logging
 import argparse
 
-from deepcubes.services import EmbedderService
+from deepcubes_services.services import EmbedderService
 
 
 parser = argparse.ArgumentParser(description='Embedder service starter')

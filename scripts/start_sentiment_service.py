@@ -4,7 +4,7 @@ import sys
 import json
 
 from deepcubes.models.sentiment import Sentiment
-from deepcubes.services import SentimentService
+from deepcubes_services.services import SentimentService
 
 
 parser = argparse.ArgumentParser(description='Sentiment Service starter')

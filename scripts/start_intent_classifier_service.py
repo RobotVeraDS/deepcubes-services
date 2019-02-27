@@ -2,7 +2,7 @@ import argparse
 import logging
 import configparser
 
-from deepcubes.services import IntentClassifierService
+from deepcubes_services.services import IntentClassifierService
 
 
 parser = argparse.ArgumentParser(description='Intent Classifier service')

@@ -2,7 +2,7 @@ import argparse
 import logging
 import configparser
 
-from deepcubes.services import MultistageClassifierService
+from deepcubes_services.services import MultistageClassifierService
 
 
 parser = argparse.ArgumentParser(description='Multistage Classifier service')
