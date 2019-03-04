@@ -34,16 +34,12 @@ class EmbedderFactory(EmbedderFactoryABC):
     def _get_full_path(self, mode):
         return os.path.join(self.path, "{}.kv".format(mode))
 
-    def create(self, embedder_serialized):
+    def create(self, embedder_mode, tokenizer_mode=Tokenizer.Mode.TOKEN):
         if self.factory_type == FactoryType.NETWORK:
-            return NetworkEmbedder(self._get_full_url(embedder_serialized["mode"]))
+            return NetworkEmbedder(self._get_full_url(embedder_mode))
         else:
-            if "tokenizer" in embedder_serialized:
-                tokenizer = Tokenizer.load(embedder_serialized["tokenizer"])
-            else:
-                tokenizer = Tokenizer(Tokenizer.Mode.TOKEN)
-
-            return LocalEmbedder(self._get_full_path(embedder_serialized["mode"]), tokenizer)
+            return LocalEmbedder(self._get_full_path(embedder_mode),
+                                 Tokenizer(tokenizer_mode))
 
 
 class NetworkEmbedder(Embedder):
@@ -55,22 +51,8 @@ class NetworkEmbedder(Embedder):
         if mode is None:
             mode = os.path.basename(url)
 
-        super().__init__(mode)
+        self.mode = mode
         self.url = url
-
-    def _get_vectors(self, url, data):
-        response = requests.post(url, json=data)
-
-        if response.status_code != 200:
-            raise ValueError("Network embedder error. Status code: {}.".format(
-                response.status_code))
-
-        content = json.loads(response.text)
-        if 'vectors' not in content:
-            # TODO: think about
-            raise ValueError("Network embedder error. No `vectors` in output.")
-        else:
-            return content['vectors']
 
     def encode_queries(self, queries):
         data = {"queries": queries}
@@ -87,18 +69,34 @@ class NetworkEmbedder(Embedder):
         url = "{}/encode_tokens".format(self.url)
         return self._get_vectors(url, data)
 
-    def save(self):
-        cube_params = {
-            "class": self.__class__.__name__,
-            "mode": self.mode
-        }
+    def get_tokenizer_mode(self):
+        response = requests.post("{}/get_tokenizer_mode".format(self.url))
 
-        return cube_params
+        if response.status_code != 200:
+            raise ValueError("Network embedder error. Status code: {}.".format(
+                response.status_code))
 
-    @classmethod
-    def load(cls, cube_params, url):
-        network_embedder = cls(url, cube_params["mode"])
-        return network_embedder
+        content = json.loads(response.text)
+        if 'tokenizer_mode' not in content:
+            raise ValueError("Network embedder error. No `tokenizer_mode` in output.")
+        else:
+            return content['tokenizer_mode']
+
+    def get_embedde_mode(self):
+        return self.mode
+
+    def _get_vectors(self, url, data):
+        response = requests.post(url, json=data)
+
+        if response.status_code != 200:
+            raise ValueError("Network embedder error. Status code: {}.".format(
+                response.status_code))
+
+        content = json.loads(response.text)
+        if 'vectors' not in content:
+            raise ValueError("Network embedder error. No `vectors` in output.")
+        else:
+            return content['vectors']
 
 
 def is_url(path):

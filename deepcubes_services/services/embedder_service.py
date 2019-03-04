@@ -26,6 +26,34 @@ class EmbedderService(object):
         self.logger.info("Prepare Flask app...")
         app = Flask(__name__)
 
+        @app.route("/<name>/get_tokenizer_mode", methods=["POST"])
+        @as_json
+        def get_tokenizer_mode(name):
+            try:
+                self.logger.info("Received {} `{}` get_tokenizer_mode request from {}".format(
+                    request.method, name, request.remote_addr
+                ))
+
+                return {"tokenizer_mode": embedders[name].get_tokenizer_mode()}
+
+            except Exception as e:
+                self.logger.error('error when handling HTTP request', exc_info=True)
+                raise JsonError(description=str(e), type=str(type(e).__name__))
+
+        @app.route("/<name>/get_embedder_mode", methods=["POST"])
+        @as_json
+        def get_embedder_mode(name):
+            try:
+                self.logger.info("Received {} `{}` get_embedder_mode request from {}".format(
+                    request.method, name, request.remote_addr
+                ))
+
+                return {"embedder_mode": embedders[name].get_embedder_mode()}
+
+            except Exception as e:
+                self.logger.error('error when handling HTTP request', exc_info=True)
+                raise JsonError(description=str(e), type=str(type(e).__name__))
+
         @app.route("/<name>/encode_tokens", methods=["POST"])
         @as_json
         def encode_tokens(name):

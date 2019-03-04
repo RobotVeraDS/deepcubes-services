@@ -84,8 +84,7 @@ class VeraLiveDialogService(object):
                 self.logger.info("Received `lang` key: {}".format(config['lang']))
 
                 embedder_mode = self.lang_to_emb_mode[config['lang']]
-                # TODO: think about this serializable method
-                embedder = self.embedder_factory.create({"mode": embedder_mode})
+                embedder = self.embedder_factory.create(embedder_mode)
                 self.logger.info("Set embedder mode: {}".format(embedder_mode))
 
                 live_dialog_model = VeraLiveDialog(embedder, self.generic_data_path)
