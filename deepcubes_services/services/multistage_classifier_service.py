@@ -4,7 +4,7 @@ import json
 from flask import Flask, request
 from flask_json import FlaskJSON, as_json, JsonError
 
-from deepcubes.models import LogisticIntentClassifier, MultistageIntentClassifier
+from deepcubes.models import IntentClassifier, MultistageIntentClassifier
 
 from .embedders import EmbedderFactory
 
@@ -81,8 +81,8 @@ class MultistageClassifierService(object):
         with open(major_model_path, 'r') as data:
             major_model_params = json.loads(data.read())
 
-        major_model = LogisticIntentClassifier.load(major_model_params,
-                                                    self.embedder_factory)
+        major_model = IntentClassifier.load(major_model_params,
+                                            self.embedder_factory)
         self.logger.info("Loading minor model {} ...".format(minor_model_id))
 
         minor_model_path = os.path.join(
@@ -95,8 +95,8 @@ class MultistageClassifierService(object):
         with open(minor_model_path, 'r') as data:
             minor_model_params = json.loads(data.read())
 
-        minor_model = LogisticIntentClassifier.load(minor_model_params,
-                                                    self.embedder_factory)
+        minor_model = IntentClassifier.load(minor_model_params,
+                                            self.embedder_factory)
 
         multistage_model = MultistageIntentClassifier(major_model, minor_model)
         multistage_model.train(groups_data_path)

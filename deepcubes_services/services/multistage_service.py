@@ -8,7 +8,7 @@ import json
 from flask import Flask, jsonify, request
 
 from deepcubes.cubes import Tokenizer
-from deepcubes.models import LogisticIntentClassifier, MultistagIntentClassifier
+from deepcubes.models import IntentClassifier, MultistagIntentClassifier
 
 from .embedders import EmbedderFactory
 
@@ -75,8 +75,8 @@ def load_model(major_model_id, minor_model_id, groups_data_path):
     with open(major_model_path, 'r') as data:
         major_model_params = json.loads(data.read())
 
-    major_model = LogisticIntentClassifier.load(major_model_params,
-                                                embedder_factory)
+    major_model = IntentClassifier.load(major_model_params,
+                                        embedder_factory)
     logger.info("Loading minor model {} ...".format(minor_model_id))
 
     minor_model_path = os.path.join(
@@ -90,8 +90,8 @@ def load_model(major_model_id, minor_model_id, groups_data_path):
     with open(minor_model_path, 'r') as data:
         minor_model_params = json.loads(data.read())
 
-    minor_model = LogisticIntentClassifier.load(minor_model_params,
-                                                embedder_factory)
+    minor_model = IntentClassifier.load(minor_model_params,
+                                        embedder_factory)
 
     tokenizer = Tokenizer()
     tokenizer.train('lem', 0)

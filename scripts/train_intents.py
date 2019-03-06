@@ -5,7 +5,7 @@ import json
 
 import pandas as pd
 
-from deepcubes.models import LogisticIntentClassifier
+from deepcubes.models import IntentClassifier
 from deepcubes_services.services.embedders import NetworkEmbedder
 
 
@@ -34,7 +34,7 @@ def main(csv_path, lang, config_path, model_id):
                 questions.append(question)
                 answers.append(answer)
 
-    classifier = LogisticIntentClassifier(embedder)
+    classifier = IntentClassifier(embedder)
     classifier.train(questions, answers)
 
     clf_params = classifier.save()

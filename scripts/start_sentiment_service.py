@@ -18,6 +18,9 @@ parser.add_argument('-l', '--logs', default="scripts/logs/sentiment_service.log"
                     help="Path to log file.")
 args = parser.parse_args()
 
+with open(args.model, "r") as infile:
+    model_params = json.load(infile)
+model = Sentiment.load(model_params, args.neural)
 
 try:
     with open(args.model, "r") as infile:

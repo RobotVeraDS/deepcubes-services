@@ -3,7 +3,7 @@ from flask_json import FlaskJSON, as_json, JsonError
 import os
 import json
 
-from deepcubes.models import LogisticIntentClassifier
+from deepcubes.models import IntentClassifier
 from deepcubes.utils.functions import sorted_labels
 from .embedders import EmbedderFactory
 
@@ -79,7 +79,7 @@ class IntentClassifierService(object):
         with open(model_path, 'r') as data:
             model_params = json.loads(data.read())
 
-        model = LogisticIntentClassifier.load(model_params, self.embedder_factory)
+        model = IntentClassifier.load(model_params, self.embedder_factory)
         return model
 
     def run(self, port):
