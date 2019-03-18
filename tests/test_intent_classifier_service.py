@@ -6,7 +6,7 @@ import configparser
 
 from deepcubes_services.services import IntentClassifierService
 from deepcubes.embedders import LocalEmbedder
-from deepcubes.cubes import Tokenizer
+from deepcubes.cubes import Tokenizer, Classifier
 from deepcubes.models import IntentClassifier
 from deepcubes_services.services.utils import get_new_model_id
 
@@ -33,7 +33,7 @@ class IntentClassifierServiceTest(unittest.TestCase):
         tokenizer = Tokenizer(Tokenizer.Mode.TOKEN)
         self.embedder = LocalEmbedder('tests/data/test_embeds.kv', tokenizer)
 
-        self.classifier = IntentClassifier(self.embedder)
+        self.classifier = IntentClassifier(self.embedder, Classifier.Mode.LOGISTIC)
 
         with open("tests/data/test_dialog.json", "r") as handle:
             data = json.load(handle)
