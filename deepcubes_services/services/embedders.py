@@ -82,7 +82,7 @@ class NetworkEmbedder(Embedder):
         else:
             return content['tokenizer_mode']
 
-    def get_embedde_mode(self):
+    def get_embedder_mode(self):
         return self.mode
 
     def _get_vectors(self, url, data):
