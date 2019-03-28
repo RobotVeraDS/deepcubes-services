@@ -4,8 +4,39 @@ import os
 import json
 
 from deepcubes.models import IntentClassifier
+from deepcubes.cubes import Tokenizer
 from deepcubes.utils.functions import sorted_labels
-from .embedders import EmbedderFactory
+from deepcubes.embedders import (LocalEmbedder,
+                                 EmbedderFactory as EmbedderFactoryABC)
+
+from .embedders import FactoryType, NetworkEmbedder, is_url
+
+class EmbedderFactory(EmbedderFactoryABC):
+    # EmbedderFactory for creation of Network embedder
+    # Use third-party embedder service
+    # https://git.stafory.tech/services/embedder
+    def __init__(self, path):
+        if is_url(path):
+            self.factory_type = FactoryType.NETWORK
+
+        else:
+            self.factory_type = FactoryType.LOCAL
+
+        self.path = path
+
+    def _get_full_url(self):
+        return "{}".format(self.path)
+
+    def _get_full_path(self, mode):
+        return os.path.join(self.path, "{}.kv".format(mode))
+
+    def create(self, embedder_mode, tokenizer_mode=Tokenizer.Mode.TOKEN):
+        if self.factory_type == FactoryType.NETWORK:
+            return NetworkEmbedder(self._get_full_url())
+        else:
+            return LocalEmbedder(self._get_full_path(embedder_mode),
+                                 Tokenizer(tokenizer_mode))
+
 
 
 class IntentClassifierService(object):

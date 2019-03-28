@@ -6,6 +6,7 @@ import json
 import pandas as pd
 
 from deepcubes.models import IntentClassifier
+from deepcubes.cubes import Tokenizer, Classifier
 from deepcubes_services.services.embedders import NetworkEmbedder
 
 
@@ -14,10 +15,13 @@ def main(csv_path, lang, config_path, model_id):
     config_parser.read(config_path)
 
     MODEL_STORAGE = config_parser.get('classifier-service', 'MODEL_STORAGE')
-    EMBEDDER_URL = config_parser.get('classifier-service', 'EMBEDDER_PATH')
     LANG_TO_EMB_MODE = dict(config_parser['embedder'])
+    EMB_MODE_TO_EMB_PATH = dict(config_parser['embedders'])
 
-    embedder = NetworkEmbedder('{}/{}'.format(EMBEDDER_URL, LANG_TO_EMB_MODE[lang]))
+    embedder_mode = LANG_TO_EMB_MODE[lang]
+    EMBEDDER_URL = EMB_MODE_TO_EMB_PATH[embedder_mode]
+
+    embedder = NetworkEmbedder(EMBEDDER_URL)
 
     questions, answers = [], []
 
@@ -34,7 +38,7 @@ def main(csv_path, lang, config_path, model_id):
                 questions.append(question)
                 answers.append(answer)
 
-    classifier = IntentClassifier(embedder)
+    classifier = IntentClassifier(embedder, Classifier.Mode.LINEARSVC)
     classifier.train(questions, answers)
 
     clf_params = classifier.save()
