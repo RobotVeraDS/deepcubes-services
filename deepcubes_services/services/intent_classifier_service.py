@@ -5,7 +5,7 @@ import json
 
 from deepcubes.models import IntentClassifier
 from deepcubes.utils.functions import sorted_labels
-from .embedders import EmbedderFactory
+from .embedders import EmbedderFactory, AdaptedEmbedderFactory
 
 
 class IntentClassifierService(object):
@@ -16,8 +16,11 @@ class IntentClassifierService(object):
         self.models_ids = models_ids
 
         self.model_storage = config.get('classifier-service', 'MODEL_STORAGE')
-        embedder_path = config.get('classifier-service', 'EMBEDDER_PATH')
-        self.embedder_factory = EmbedderFactory(embedder_path)
+        # embedder_path = config.get('classifier-service', 'EMBEDDER_PATH')
+        emb_mode_to_url = config['emb_mode_to_url']
+
+        # self.embedder_factory = EmbedderFactory(embedder_path)
+        self.embedder_factory = AdaptedEmbedderFactory(emb_mode_to_url)
 
         self.models = dict()
         for model_id in models_ids:

@@ -11,6 +11,7 @@ from deepcubes.embedders import (
 )
 
 from deepcubes.cubes import Tokenizer
+from classifier.embedder import Embedder as AdaptedEmbedder
 
 
 class FactoryType(Enum):
@@ -41,6 +42,13 @@ class EmbedderFactory(EmbedderFactoryABC):
             return LocalEmbedder(self._get_full_path(embedder_mode),
                                  Tokenizer(tokenizer_mode))
 
+class AdaptedEmbedderFactory(EmbedderFactoryABC):
+
+    def __init__(self, mode_to_url):
+        self.mode_to_url = mode_to_url
+
+    def create(self, embedder_mode, tokenizer_mode=Tokenizer.Mode.TOKEN):
+        return AdaptedEmbedder(self.mode_to_url[embedder_mode])
 
 class NetworkEmbedder(Embedder):
     """Network embedder"""
